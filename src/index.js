@@ -24,6 +24,7 @@ async function initializeUsers() {
   const hashedPassword = await bcrypt.hash("password123", 10);
   users.push({
     id: "1",
+    username: "user1",
     email: "user@example.com",
     password: hashedPassword,
   });
@@ -79,6 +80,18 @@ app.put("/update-email", authenticateJWT, (req, res) => {
       email: user.email,
     },
   });
+});
+
+app.delete("/delete-account", authenticateJWT, (req, res) => {
+  const userId = req.user.userId;
+  const userExists = users.some((user) => user.id === userId);
+  if (!userExists) {
+    return res.status(404).json({ message: "User  not found" });
+  }
+  const updatedUsers = users.filter((user) => user.id !== userId);
+  users.length = 0;
+  users.push(...updatedUsers);
+  res.json({ message: "Account successfully deleted" });
 });
 
 const PORT = process.env.PORT || 3000;
