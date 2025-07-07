@@ -1,5 +1,21 @@
+import express from "express";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import "dotenv/config";
+
 const app = express();
 app.use(express.json());
+
+function logRequest(req, res, next) {
+  console.log(`Received ${req.method} request for ${req.url}`);
+  next();
+}
+
+app.use(logRequest);
+
+app.get("/", (req, res) => {
+  res.send("This is Home Page");
+});
 
 const users = [
   {
@@ -25,11 +41,9 @@ app.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Wrong password" });
     }
 
-    const token = jwtSecret.substring(
-      { userId: user.id, email: user.email },
-      jwtSecret,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ userId: user.id, email: user.email }, jwtSecret, {
+      expiresIn: "1h",
+    });
 
     res.json({ token });
   } catch (error) {
