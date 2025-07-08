@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import { authenticateJWT } from "./middleware/authenticateJWT.js";
+import { authorizeRole } from "./middleware/authorizeRole.js";
 
 const app = express();
 app.use(express.json());
@@ -27,6 +28,14 @@ async function initializeUsers() {
     username: "user1",
     email: "user@example.com",
     password: hashedPassword,
+    role: "admin",
+  });
+  users.push({
+    id: "2",
+    username: "user2",
+    email: "user2@example.com",
+    password: hashedPassword,
+    role: "user",
   });
 }
 
@@ -56,6 +65,18 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
+});
+
+app.put("/update-role", authenticateJWT, authorizeRole("admin"), (req, res) => {
+  const { userId, newRole } = req.body;
+
+  const user = users.find((u) => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ message: "User  not found" });
+  }
+  user.role = newRole;
+
+  res.json({ message: "User role updated successfully", user });
 });
 
 app.put("/update-email", authenticateJWT, (req, res) => {
