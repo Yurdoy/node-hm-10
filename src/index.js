@@ -116,8 +116,17 @@ app.delete("/delete-account", authenticateJWT, (req, res) => {
 });
 
 app.post("/refresh-token", authenticateJWT, (req, res) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
   const { userId, email } = req.user;
 
+  if (!token) {
+    return res.status(401).json({ message: "Token is required" });
+  }
+  jwt.verify(token, jwtSecret, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Token is invalid or expired" });
+    }
+  });
   const newToken = jwt.sign({ userId, email }, jwtSecret, { expiresIn: "1h" });
   res.json({ message: "This is your new token", token: newToken });
 });
