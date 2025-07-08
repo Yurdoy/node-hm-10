@@ -115,6 +115,13 @@ app.delete("/delete-account", authenticateJWT, (req, res) => {
   res.json({ message: "Account successfully deleted" });
 });
 
+app.post("/refresh-token", authenticateJWT, (req, res) => {
+  const { userId, email } = req.user;
+
+  const newToken = jwt.sign({ userId, email }, jwtSecret, { expiresIn: "1h" });
+  res.json({ message: "This is your new token", token: newToken });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
